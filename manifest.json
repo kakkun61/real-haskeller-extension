@@ -1,0 +1,19 @@
+{
+  "name": "Better 『本物のプログラマはHaskellを使う』",
+  "description": "『本物のプログラマはHaskellを使う』を読みやすくする",
+  "version": "0.0",
+  "manifest_version": 3,
+  "content_scripts": [
+    {
+      "matches": [
+        "https://xtech.nikkei.com/it/article/COLUMN/*/*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ]
+    }
+  ]
+}
