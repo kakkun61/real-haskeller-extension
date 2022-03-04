@@ -15,5 +15,16 @@
         "content.css"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "config.json",
+        "icon/information-outline.svg"
+      ],
+      "matches": [
+        "https://xtech.nikkei.com/*"
+      ]
+    }
   ]
 }

@@ -1,15 +1,101 @@
 'use strict';
 
+// @procedure
 const warn = (message) => {
-  console.warn(`real-haskeller-extension: content.js: ${message}`);
+  console.warn(`real-haskeller-extension: ${message}`);
 };
 
-const articleBodies = document.getElementsByClassName('articleBody');
-if (articleBodies.length !== 1) {
-  warn('unexpected');
-}
-else {
-  const articleBody = articleBodies[0];
+// @function
+const parseInt_ = (string) => {
+  let float = 0;
+  for (const char of string) {
+    if (!char.match(/[0-9]/)) {
+      return NaN;
+    }
+    float = float * 10 + parseInt(char);
+  }
+  return float;
+};
+
+const assets = {
+  config: chrome.runtime.getURL('/config.json')
+};
+
+// @function
+const getPageId = (href) => {
+  const urlHead = 'https://xtech.nikkei.com/it/article/COLUMN/';
+  if (!href.startsWith(urlHead)) {
+    console.assert(false);
+    return null;
+  }
+  const href_ = href.substring(urlHead.length);
+  const firstSlash = href_.indexOf('/');
+  if (firstSlash === -1) {
+    console.assert(false);
+    return null;
+  }
+  const secondSlash = href_.indexOf('/', firstSlash + 1);
+  if (secondSlash === -1) {
+    console.assert(false);
+    return null;
+  }
+  return href_.substring(0, secondSlash);
+};
+
+// @function
+const getExtensionAttribute = (class_) => {
+  const execCommand = (cmd) => {
+    const assetCommand = 'asset';
+    if (cmd.startsWith(assetCommand + ':')) {
+      const param = cmd.substring(assetCommand.length + 1);
+      return chrome.runtime.getURL(param);
+    }
+    return cmd;
+  };
+
+  const prefix = 'real-haskeller_';
+  if (!class_.startsWith(prefix)) {
+    return null;
+  }
+  const cmd = class_.substring(prefix.length);
+  const parts = cmd.split('=');
+  if (parts.length < 2) {
+    return null;
+  }
+  const attrName = parts[0];
+  const attrVal = execCommand(cmd.substring(attrName.length + 1));
+  return {
+    name: attrName,
+    value: attrVal
+  }
+};
+
+// @procedure
+const setExtensionAttribute = (node) => {
+  for (const className of node.classList) {
+    const exAttr = getExtensionAttribute(className);
+    if (exAttr !== null) {
+      node.setAttribute(exAttr.name, exAttr.value);
+    }
+  }
+  for (const child of node.children) {
+    setExtensionAttribute(child);
+  }
+};
+
+// @procedure
+const main = () => {
+  const articleBody = (() => {
+    const articleBodies = document.getElementsByClassName('articleBody');
+    if (articleBodies.length !== 1) {
+      warn('unexpected');
+      return null;
+    }
+    return articleBodies[0];
+  })();
+  if (articleBody === null) {
+    return;
+  }
 
   (() => {
     /* PrismJS 1.27.0
@@ -18,14 +104,14 @@ else {
     Prism.languages.haskell={comment:{pattern:/(^|[^-!#$%*+=?&@|~.:<>^\\\/])(?:--(?:(?=.)[^-!#$%*+=?&@|~.:<>^\\\/].*|$)|\{-[\s\S]*?-\})/m,lookbehind:!0},char:{pattern:/'(?:[^\\']|\\(?:[abfnrtv\\"'&]|\^[A-Z@[\]^_]|ACK|BEL|BS|CAN|CR|DC1|DC2|DC3|DC4|DEL|DLE|EM|ENQ|EOT|ESC|ETB|ETX|FF|FS|GS|HT|LF|NAK|NUL|RS|SI|SO|SOH|SP|STX|SUB|SYN|US|VT|\d+|o[0-7]+|x[0-9a-fA-F]+))'/,alias:"string"},string:{pattern:/"(?:[^\\"]|\\(?:\S|\s+\\))*"/,greedy:!0},keyword:/\b(?:case|class|data|deriving|do|else|if|in|infixl|infixr|instance|let|module|newtype|of|primitive|then|type|where)\b/,"import-statement":{pattern:/(^[\t ]*)import\s+(?:qualified\s+)?(?:[A-Z][\w']*)(?:\.[A-Z][\w']*)*(?:\s+as\s+(?:[A-Z][\w']*)(?:\.[A-Z][\w']*)*)?(?:\s+hiding\b)?/m,lookbehind:!0,inside:{keyword:/\b(?:as|hiding|import|qualified)\b/,punctuation:/\./}},builtin:/\b(?:abs|acos|acosh|all|and|any|appendFile|approxRational|asTypeOf|asin|asinh|atan|atan2|atanh|basicIORun|break|catch|ceiling|chr|compare|concat|concatMap|const|cos|cosh|curry|cycle|decodeFloat|denominator|digitToInt|div|divMod|drop|dropWhile|either|elem|encodeFloat|enumFrom|enumFromThen|enumFromThenTo|enumFromTo|error|even|exp|exponent|fail|filter|flip|floatDigits|floatRadix|floatRange|floor|fmap|foldl|foldl1|foldr|foldr1|fromDouble|fromEnum|fromInt|fromInteger|fromIntegral|fromRational|fst|gcd|getChar|getContents|getLine|group|head|id|inRange|index|init|intToDigit|interact|ioError|isAlpha|isAlphaNum|isAscii|isControl|isDenormalized|isDigit|isHexDigit|isIEEE|isInfinite|isLower|isNaN|isNegativeZero|isOctDigit|isPrint|isSpace|isUpper|iterate|last|lcm|length|lex|lexDigits|lexLitChar|lines|log|logBase|lookup|map|mapM|mapM_|max|maxBound|maximum|maybe|min|minBound|minimum|mod|negate|not|notElem|null|numerator|odd|or|ord|otherwise|pack|pi|pred|primExitWith|print|product|properFraction|putChar|putStr|putStrLn|quot|quotRem|range|rangeSize|read|readDec|readFile|readFloat|readHex|readIO|readInt|readList|readLitChar|readLn|readOct|readParen|readSigned|reads|readsPrec|realToFrac|recip|rem|repeat|replicate|return|reverse|round|scaleFloat|scanl|scanl1|scanr|scanr1|seq|sequence|sequence_|show|showChar|showInt|showList|showLitChar|showParen|showSigned|showString|shows|showsPrec|significand|signum|sin|sinh|snd|sort|span|splitAt|sqrt|subtract|succ|sum|tail|take|takeWhile|tan|tanh|threadToIOResult|toEnum|toInt|toInteger|toLower|toRational|toUpper|truncate|uncurry|undefined|unlines|until|unwords|unzip|unzip3|userError|words|writeFile|zip|zip3|zipWith|zipWith3)\b/,number:/\b(?:\d+(?:\.\d+)?(?:e[+-]?\d+)?|0o[0-7]+|0x[0-9a-f]+)\b/i,operator:[{pattern:/`(?:[A-Z][\w']*\.)*[_a-z][\w']*`/,greedy:!0},{pattern:/(\s)\.(?=\s)/,lookbehind:!0},/[-!#$%*+=?&@|~:<>^\\\/][-!#$%*+=?&@|~.:<>^\\\/]*|\.[-!#$%*+=?&@|~.:<>^\\\/]+/],hvariable:{pattern:/\b(?:[A-Z][\w']*\.)*[_a-z][\w']*/,inside:{punctuation:/\./}},constant:{pattern:/\b(?:[A-Z][\w']*\.)*[A-Z][\w']*/,inside:{punctuation:/\./}},punctuation:/[{}[\];(),.:]/},Prism.languages.hs=Prism.languages.haskell;
   })();
 
-  (() => {
+  {
     const divs = articleBody.querySelectorAll('div:not(.bpcode)');
     for (const div of divs) {
       div.removeAttribute('style');
     }
-  })();
+  }
 
-  (() => {
+  {
     const pres = articleBody.getElementsByTagName('pre');
     for (const pre of pres) {
       const code = document.createElement('code');
@@ -34,5 +120,63 @@ else {
       pre.textContent = '';
       pre.appendChild(code);
     }
+  }
+
+  (async () => {
+    const configPath = assets.config;
+    const config = await ((await fetch(configPath)).json());
+    const pageId = getPageId(window.location.href);
+    const pageConfig = config[pageId];
+    if (typeof(pageConfig) === 'undefined') {
+      return;
+    }
+    if (typeof(pageConfig['inline']) !== 'undefined') {
+      const inlineConfig = pageConfig['inline'];
+      for (const targetQuery in inlineConfig) {
+        const target = articleBody.querySelector(targetQuery)
+        if (target === null) {
+          warn(`not found: ${targetQuery}`);
+          continue;
+        }
+        const targetConfig = inlineConfig[targetQuery];
+        const text = target.textContent;
+        target.textContent = '';
+        let prevIns = 0;
+        for (const newTagConfig of targetConfig) {
+          target.appendChild(document.createTextNode(text.substring(prevIns, newTagConfig.begin)));
+          const newTag = document.createElement(newTagConfig.tag);
+          for (const attribute in newTagConfig.attributes) {
+            newTag.setAttribute(attribute, newTagConfig.attributes[attribute]);
+          }
+          newTag.textContent = text.substring(newTagConfig.begin, newTagConfig.end);
+          target.appendChild(newTag);
+          prevIns = newTagConfig.end;
+        }
+        target.appendChild(document.createTextNode(text.substring(prevIns)));
+      }
+    }
+    if (typeof(pageConfig['block']) !== 'undefined') {
+      const blockConfig = pageConfig['block'];
+      for (const nthStr in blockConfig) {
+        const newTagStr = blockConfig[nthStr];
+        const nth = parseInt_(nthStr)
+        if (isNaN(nth)) {
+          warn(`invalid nth: ${nthStr}`);
+          continue;
+        }
+        const before = articleBody.children[nth + 1];
+        if (typeof(before) === 'undefined') {
+          warn(`not found: ${nth}`);
+          continue;
+        }
+        const dummy = document.createElement('div');
+        dummy.innerHTML = newTagStr;
+        const newTag = dummy.firstChild;
+        articleBody.insertBefore(newTag, before);
+        setExtensionAttribute(newTag);
+      }
+    }
   })();
-}
+};
+
+main();

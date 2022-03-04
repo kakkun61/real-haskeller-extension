@@ -1,0 +1,71 @@
+{
+  "20060905/247156": {
+    "inline": {
+      "div.articleBody > p:nth-child(7)": [
+        {
+          "begin": 42,
+          "end": 50,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        },
+        {
+          "begin": 66,
+          "end": 74,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        }
+      ],
+      "div.articleBody > p:nth-child(11)": [
+        {
+          "begin": 14,
+          "end": 19,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        },
+        {
+          "begin": 72,
+          "end": 77,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        },
+        {
+          "begin": 78,
+          "end": 80,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        }
+      ],
+      "div.articleBody > p:nth-child(13)": [
+        {
+          "begin": 5,
+          "end": 13,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        },
+        {
+          "begin": 55,
+          "end": 58,
+          "tag": "code",
+          "attributes": {
+            "class": "language-haskell"
+          }
+        }
+      ]
+    },
+    "block": {
+      "15": "<div class=real-haskeller_note><p><img class=\"real-haskeller_src=asset:icon/information-outline.svg real-haskeller_note_icon\" src=\"\"> GHC 9.2現在、<code class=language-haskell>let</code>なしでも変数束縛ができます。</p></div>"
+    }
+  }
+}
